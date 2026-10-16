@@ -1,0 +1,18 @@
+name: Tarea técnica
+description: Trabajo que no cambia el comportamiento visible (infraestructura, refactor, dependencias, CI).
+title: "[TAREA] Descripción corta"
+labels: ["tipo:tarea"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+      description: Qué se quiere lograr y por qué.
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Alcance y criterio de terminado
+    validations:
+      required: true

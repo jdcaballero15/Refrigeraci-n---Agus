@@ -1,0 +1,35 @@
+name: Sincronizar historias con issues
+
+# Fuente de verdad: los .md de docs/stories/. Esta acción crea o actualiza un issue por historia
+# (identificado por su ID en el título, por ejemplo "[E04-03] Asignar orden a un técnico").
+# Nunca cierra ni borra issues.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/stories/**"
+      - "scripts/sync_stories.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: stories-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - run: python scripts/validate_stories.py
+      - run: python scripts/sync_stories.py
+        env:
+          GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,40 @@
+name: Claude (triage de issues)
+
+# Cuando se abre un issue, Claude verifica el formato, sugiere etiquetas y avisa
+# si falta información. No cierra ni asigna issues.
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage:
+    if: |
+      github.event.issue.user.type != 'Bot' &&
+      !contains(github.event.issue.body, '<!-- story-sync:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Hacé triage del issue ${{ github.repository }}#${{ github.event.issue.number }}.
+
+            1. Leé el issue y docs/stories/README.md (formato de historias y etiquetas).
+            2. Si es una historia: verificá que tenga "Como / quiero / para", criterios de aceptación verificables y épica. Si falta algo, dejá un comentario breve y concreto con lo que falta.
+            3. Si es un bug: verificá que tenga pasos para reproducir, resultado esperado y resultado actual.
+            4. Aplicá etiquetas existentes (gh label list) de tipo, épica y prioridad cuando se puedan deducir. No inventes etiquetas.
+            5. Si el issue contiene datos reales de clientes, DNI, precios o credenciales, comentalo de inmediato pidiendo que se edite el issue. No repitas esos datos.
+
+            Respondé en español, sin guion largo.
+          claude_args: |
+            --max-turns 8
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh issue edit:*),Bash(gh label list:*),Read,Grep,Glob"

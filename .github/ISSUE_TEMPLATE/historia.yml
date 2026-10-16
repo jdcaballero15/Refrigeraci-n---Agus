@@ -1,0 +1,45 @@
+name: Historia de usuario
+description: Nueva funcionalidad. La fuente de verdad es el .md en docs/stories/ (este issue se genera desde ahí). Usá este formulario solo si todavía no existe el archivo.
+title: "[EXX-NN] Título corto"
+labels: ["tipo:historia", "estado:borrador"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Después de crear el issue, agregá el archivo en `docs/stories/<epica>/` (comando `/new-story` en Claude Code).
+        No incluyas datos reales de clientes, DNI, precios ni credenciales: el repositorio es público.
+  - type: input
+    id: epica
+    attributes:
+      label: Épica
+      placeholder: "E04 Órdenes de trabajo"
+    validations:
+      required: true
+  - type: textarea
+    id: historia
+    attributes:
+      label: Historia
+      description: Como [rol], quiero [acción], para [beneficio].
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      description: Dado / Cuando / Entonces, uno por línea. Cada uno tiene que poder probarse.
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options:
+        - Debe (M)
+        - Debería (S)
+        - Podría (C)
+    validations:
+      required: true
+  - type: textarea
+    id: notas
+    attributes:
+      label: Notas y dependencias

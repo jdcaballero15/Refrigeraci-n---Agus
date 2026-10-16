@@ -1,0 +1,10 @@
+# Deteccion de credenciales (pre-commit y CI). Extiende las reglas por defecto.
+# El repositorio es PUBLICO: un secreto commiteado se considera filtrado y se rota.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Plantillas de variables de entorno (sin valores reales)."
+paths = [
+    '''\.env\.example$''',
+]

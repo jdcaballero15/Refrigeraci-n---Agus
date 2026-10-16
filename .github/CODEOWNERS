@@ -1,0 +1,15 @@
+# Cada línea asigna revisores automáticos. Reemplazar los marcadores por usuarios reales de GitHub.
+# Mientras haya marcadores sin reemplazar, dejar las líneas comentadas (una línea con un usuario
+# inexistente hace que GitHub marque el archivo como inválido).
+
+# Desarrollo (revisor por defecto)
+# *                       @USUARIO-JUAN-DIEGO
+
+# Reglas de negocio e historias: las valida el analista de negocio
+# /docs/stories/          @USUARIO-GONZA
+# /docs/domain/           @USUARIO-GONZA
+
+# Workflow, CI y agentes de IA
+# /.github/               @USUARIO-JUAN-DIEGO
+# /.claude/               @USUARIO-JUAN-DIEGO
+# /CLAUDE.md              @USUARIO-JUAN-DIEGO

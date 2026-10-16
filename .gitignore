@@ -1,0 +1,47 @@
+# Secretos y entorno
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.vite/
+*.tsbuildinfo
+coverage/
+
+# Datos locales y exportaciones (nunca al repo)
+/data/
+/exports/
+/persat-export/
+*.csv
+!docs/**/*.csv
+!backend/tests/fixtures/*.csv
+*.sql.gz
+*.dump
+
+# Editores y SO
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Claude Code (configuración personal)
+.claude/settings.local.json
+CLAUDE.local.md

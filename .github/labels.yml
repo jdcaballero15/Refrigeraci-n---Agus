@@ -1,0 +1,47 @@
+# Etiquetas del repositorio. Se crean con scripts/bootstrap-github.sh
+# formato: nombre | color | descripción
+
+# Tipo
+- { name: "tipo:historia", color: "0E8A16", description: "Historia de usuario" }
+- { name: "tipo:bug", color: "D73A4A", description: "Error" }
+- { name: "tipo:tarea", color: "C5DEF5", description: "Tarea técnica" }
+
+# Épicas
+- { name: "epica:E00-fundaciones", color: "1D76DB", description: "Fundaciones de plataforma" }
+- { name: "epica:E01-acceso", color: "1D76DB", description: "Acceso, usuarios y roles" }
+- { name: "epica:E02-catalogos", color: "1D76DB", description: "Catálogos" }
+- { name: "epica:E03-clientes-equipos", color: "1D76DB", description: "Clientes y equipos" }
+- { name: "epica:E04-ordenes", color: "1D76DB", description: "Órdenes de trabajo (administración)" }
+- { name: "epica:E05-app-tecnico", color: "1D76DB", description: "App del técnico" }
+- { name: "epica:E06-taller", color: "1D76DB", description: "Órdenes de taller" }
+- { name: "epica:E07-mantenimiento", color: "1D76DB", description: "Mantenimiento preventivo" }
+- { name: "epica:E08-stock", color: "1D76DB", description: "Stock de repuestos" }
+- { name: "epica:E09-comprobantes-informes", color: "1D76DB", description: "Comprobantes e informes" }
+- { name: "epica:E10-tablero", color: "1D76DB", description: "Tablero de seguimiento" }
+- { name: "epica:E11-migracion", color: "1D76DB", description: "Migración y puesta en marcha" }
+- { name: "epica:E12-transversal", color: "1D76DB", description: "Auditoría, privacidad y calidad" }
+- { name: "epica:E99-icebox", color: "BFD4F2", description: "Fuera de alcance por ahora" }
+
+# Prioridad (MoSCoW)
+- { name: "prioridad:debe", color: "B60205", description: "Debe estar en la fase" }
+- { name: "prioridad:deberia", color: "FBCA04", description: "Debería estar" }
+- { name: "prioridad:podria", color: "FEF2C0", description: "Podría estar si hay tiempo" }
+
+# Estado
+- { name: "estado:borrador", color: "EDEDED", description: "Historia sin validar" }
+- { name: "estado:lista", color: "0E8A16", description: "Validada, lista para implementar" }
+- { name: "estado:en-curso", color: "FBCA04", description: "En desarrollo" }
+- { name: "estado:hecha", color: "5319E7", description: "Terminada" }
+- { name: "estado:icebox", color: "BFD4F2", description: "Fuera de alcance por ahora" }
+- { name: "bloqueada", color: "000000", description: "Depende de una decisión pendiente" }
+
+# Fase
+- { name: "fase:1", color: "D4C5F9", description: "Fase 1" }
+- { name: "fase:2", color: "D4C5F9", description: "Fase 2" }
+
+# Área
+- { name: "area:backend", color: "F9D0C4", description: "API y base de datos" }
+- { name: "area:web-admin", color: "F9D0C4", description: "App de administración" }
+- { name: "area:pwa", color: "F9D0C4", description: "App del técnico" }
+- { name: "area:infra", color: "F9D0C4", description: "Infraestructura, CI y despliegue" }
+- { name: "area:datos", color: "F9D0C4", description: "Migración y datos" }

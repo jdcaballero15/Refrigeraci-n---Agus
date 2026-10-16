@@ -1,0 +1,43 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(ci)"
+
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(backend)"
+    groups:
+      python-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /web-admin
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(web-admin)"
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /pwa-tecnico
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(pwa)"
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: monthly

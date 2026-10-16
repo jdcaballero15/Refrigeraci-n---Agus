@@ -1,0 +1,403 @@
+// Modelo de datos (borrador v0.1). Se visualiza pegando este archivo en https://dbdiagram.io
+// Reglas (ver ADR 0005):
+//  - Todas las tablas llevan id uuid, created_at, updated_at y deleted_at (borrado lógico).
+//    Para no repetir, se omiten abajo salvo que importen.
+//  - Fechas de negocio y precios viven solo en tablas de transacción.
+//  - Lo marcado "ADMIN" no se expone al rol técnico (ver ADR 0006).
+//  - Nombres de tablas y columnas en inglés. Etiquetas de negocio en español en las notas.
+
+Enum user_role {
+  admin
+  technician
+  owner
+}
+
+Enum order_kind {
+  on_site
+  workshop
+}
+
+Enum order_status {
+  pending      [note: 'Pendiente']
+  assigned     [note: 'Asignada']
+  in_progress  [note: 'En curso']
+  done         [note: 'Terminada']
+  invoiced     [note: 'Facturada']
+  paid         [note: 'Cobrada']
+  cancelled    [note: 'Cancelada']
+}
+
+Enum stage_type {
+  pickup    [note: 'Retiro']
+  workshop  [note: 'Taller']
+  delivery  [note: 'Devolución']
+}
+
+Enum stage_status {
+  pending
+  in_progress
+  done
+}
+
+Enum order_source {
+  manual
+  maintenance
+}
+
+Enum closure_outcome {
+  done
+  needs_pickup   [note: 'Requiere retiro: convierte la orden en orden de taller']
+  needs_revisit  [note: 'Requiere otra visita: vuelve a administración para reprogramar']
+}
+
+Enum signature_purpose {
+  closure
+  pickup
+  delivery
+}
+
+Enum maintenance_frequency {
+  monthly
+  semiannual
+  annual
+}
+
+Enum checklist_item_kind {
+  ok_no
+  measurement
+}
+
+Enum stock_location_type {
+  depot
+  vehicle
+}
+
+Enum stock_movement_reason {
+  receipt
+  transfer
+  usage
+  adjustment
+}
+
+// ---------- Acceso ----------
+
+Table app_user {
+  id uuid [pk]
+  email varchar [unique, not null]
+  full_name varchar [not null]
+  role user_role [not null]
+  password_hash varchar [not null]
+  is_active boolean [not null, default: true]
+}
+
+// ---------- Catálogos ----------
+
+Table work_type {
+  id uuid [pk]
+  name varchar [not null, note: 'Instalación, reparación, service, devolución, retiro, relevamiento']
+  is_active boolean [default: true]
+}
+
+Table task {
+  id uuid [pk]
+  work_type_id uuid [ref: > work_type.id]
+  name varchar [not null, note: 'Subtarea predefinida']
+  is_active boolean [default: true]
+}
+
+Table equipment_type {
+  id uuid [pk]
+  name varchar [not null]
+}
+
+Table failure {
+  id uuid [pk]
+  equipment_type_id uuid [ref: > equipment_type.id, note: 'Null = aplica a todos']
+  name varchar [not null]
+  is_active boolean [default: true]
+}
+
+Table repair {
+  id uuid [pk]
+  equipment_type_id uuid [ref: > equipment_type.id]
+  name varchar [not null]
+  is_active boolean [default: true]
+}
+
+// ---------- Clientes y equipos ----------
+
+Table client {
+  id uuid [pk]
+  name varchar [not null]
+  tax_id varchar [note: 'CUIT o DNI. Dato personal, ver SECURITY.md']
+  notes text
+}
+
+Table client_contact {
+  id uuid [pk]
+  client_id uuid [ref: > client.id, not null]
+  name varchar
+  phone varchar
+  email varchar
+  receives_monthly_report boolean [default: false]
+}
+
+Table client_site {
+  id uuid [pk]
+  client_id uuid [ref: > client.id, not null]
+  label varchar [note: 'Sucursal, planta, domicilio']
+  address varchar [not null]
+}
+
+Table equipment {
+  id uuid [pk]
+  client_site_id uuid [ref: > client_site.id, not null]
+  equipment_type_id uuid [ref: > equipment_type.id, not null]
+  brand varchar
+  model varchar
+  serial_number varchar
+  internal_code varchar [note: 'Pendiente D-002: código propio vs. ubicación']
+  location_note varchar [note: 'Ubicación dentro del cliente. Pendiente D-002']
+}
+
+// ---------- Órdenes de trabajo ----------
+
+Table work_order {
+  id uuid [pk]
+  number bigint [unique, not null, note: 'Número correlativo legible']
+  kind order_kind [not null, default: 'on_site']
+  source order_source [not null, default: 'manual']
+  status order_status [not null, note: 'Derivado del último work_order_event, mantenido en la misma transacción']
+  client_id uuid [ref: > client.id, not null]
+  client_site_id uuid [ref: > client_site.id, not null]
+  equipment_id uuid [ref: > equipment.id]
+  work_type_id uuid [ref: > work_type.id, not null]
+  description text
+  requires_approval boolean [default: false, note: 'Órdenes generadas por mantenimiento hasta su aprobación en bloque. Pendiente D-005']
+  maintenance_run_id uuid [ref: > maintenance_run.id]
+}
+
+Table work_order_event {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  stage_id uuid [ref: > work_order_stage.id]
+  event_type varchar [not null, note: 'status_change, assigned, unassigned, review_approved, review_returned, converted_to_workshop, closure_in_review']
+  from_status order_status
+  to_status order_status [note: 'Null en eventos que no cambian el estado']
+  occurred_at timestamptz [not null, note: 'Fuente de todas las fechas de negocio de la orden']
+  actor_id uuid [ref: > app_user.id]
+  note text
+}
+
+Table work_order_stage {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  stage_type stage_type [not null]
+  sequence int [not null]
+  status stage_status [not null, default: 'pending']
+}
+
+Table work_order_assignment {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  stage_id uuid [ref: > work_order_stage.id]
+  technician_id uuid [ref: > app_user.id, not null]
+  scheduled_for date
+  assigned_at timestamptz [not null]
+  unassigned_at timestamptz
+}
+
+Table work_order_closure {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  stage_id uuid [ref: > work_order_stage.id]
+  closed_by uuid [ref: > app_user.id, not null]
+  closed_at timestamptz [not null]
+  outcome closure_outcome [not null]
+  failure_id uuid [ref: > failure.id]
+  failure_other_text varchar
+  repair_id uuid [ref: > repair.id]
+  repair_other_text varchar
+  equipment_working boolean
+  observation text
+  idempotency_key uuid [unique, not null, note: 'Generada en el celular. Evita duplicados al sincronizar']
+}
+
+Table signature {
+  id uuid [pk]
+  closure_id uuid [ref: > work_order_closure.id, not null]
+  purpose signature_purpose [not null]
+  signer_name varchar [not null]
+  signer_dni varchar [not null, note: 'Dato personal. Cifrar en reposo']
+  image_key varchar [not null, note: 'Clave en el bucket']
+  signed_at timestamptz [not null]
+}
+
+Table attachment {
+  id uuid [pk]
+  closure_id uuid [ref: > work_order_closure.id, not null]
+  storage_key varchar [not null, note: 'Clave en el bucket. Nunca el archivo en la base']
+  content_type varchar [not null]
+  size_bytes int [not null]
+  uploaded_at timestamptz [not null]
+}
+
+// ---------- Repuestos, precios y mano de obra ----------
+
+Table part {
+  id uuid [pk]
+  name varchar [not null]
+  unit varchar [not null, default: 'unidad']
+  code varchar [note: 'Hoy los repuestos no tienen código']
+  is_active boolean [default: true]
+}
+
+Table part_price {
+  id uuid [pk]
+  part_id uuid [ref: > part.id, not null]
+  list_price numeric(14,2) [not null, note: 'ADMIN']
+  valid_from timestamptz [not null]
+}
+
+Table part_usage {
+  id uuid [pk]
+  closure_id uuid [ref: > work_order_closure.id, not null]
+  part_id uuid [ref: > part.id, not null]
+  quantity numeric(12,3) [not null]
+  unit_price numeric(14,2) [not null, note: 'ADMIN. Estampado al usar, no cambia si cambia la lista']
+  stock_location_id uuid [ref: > stock_location.id]
+  used_at timestamptz [not null]
+}
+
+Table work_order_charge {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  concept varchar [not null, note: 'Mano de obra, visita, otro']
+  amount numeric(14,2) [not null, note: 'ADMIN']
+  charged_at timestamptz [not null]
+}
+
+// ---------- Facturación y cobro ----------
+
+Table invoice_record {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  invoice_number varchar [not null, note: 'La factura se emite en el sistema de facturación del cliente. Datos exactos: D-004']
+  recorded_at timestamptz [not null]
+  recorded_by uuid [ref: > app_user.id, not null]
+}
+
+Table payment_record {
+  id uuid [pk]
+  work_order_id uuid [ref: > work_order.id, not null]
+  recorded_at timestamptz [not null]
+  recorded_by uuid [ref: > app_user.id, not null]
+}
+
+// ---------- Stock ----------
+
+Table stock_location {
+  id uuid [pk]
+  type stock_location_type [not null]
+  name varchar [not null]
+  technician_id uuid [ref: > app_user.id, note: 'Para camionetas']
+}
+
+Table stock_movement {
+  id uuid [pk]
+  part_id uuid [ref: > part.id, not null]
+  from_location_id uuid [ref: > stock_location.id]
+  to_location_id uuid [ref: > stock_location.id]
+  quantity numeric(12,3) [not null]
+  reason stock_movement_reason [not null]
+  part_usage_id uuid [ref: > part_usage.id]
+  moved_at timestamptz [not null]
+  moved_by uuid [ref: > app_user.id, not null]
+  note varchar
+}
+
+// ---------- Mantenimiento preventivo ----------
+
+Table checklist_template {
+  id uuid [pk]
+  name varchar [not null]
+  frequency maintenance_frequency [not null]
+  equipment_type_id uuid [ref: > equipment_type.id, note: 'Null = plantilla general de esa frecuencia']
+}
+
+Table checklist_template_item {
+  id uuid [pk]
+  template_id uuid [ref: > checklist_template.id, not null]
+  position int [not null]
+  label varchar [not null]
+  kind checklist_item_kind [not null]
+  unit varchar [note: 'Para mediciones: V, A, °C, bar']
+  expected_min numeric(12,3)
+  expected_max numeric(12,3)
+}
+
+Table maintenance_plan {
+  id uuid [pk]
+  client_id uuid [ref: > client.id, not null, note: 'Abono']
+  name varchar
+}
+
+Table maintenance_plan_equipment {
+  id uuid [pk]
+  plan_id uuid [ref: > maintenance_plan.id, not null]
+  equipment_id uuid [ref: > equipment.id, not null]
+  frequency maintenance_frequency [not null]
+  starts_on date [not null]
+  ends_on date
+}
+
+Table maintenance_run {
+  id uuid [pk]
+  period varchar(7) [unique, not null, note: 'AAAA-MM']
+  generated_at timestamptz [not null]
+  approved_at timestamptz
+  approved_by uuid [ref: > app_user.id]
+}
+
+Table checklist_result {
+  id uuid [pk]
+  closure_id uuid [ref: > work_order_closure.id, not null]
+  template_item_id uuid [ref: > checklist_template_item.id, not null]
+  result varchar [note: 'ok o not_ok para ítems ok_no']
+  measured_value numeric(12,3)
+  out_of_range boolean
+  observation text
+}
+
+// ---------- Informes, auditoría y migración ----------
+
+Table monthly_report_delivery {
+  id uuid [pk]
+  client_id uuid [ref: > client.id, not null]
+  period varchar(7) [not null]
+  to_email varchar [not null]
+  status varchar [not null, note: 'queued, sent, failed']
+  sent_at timestamptz
+}
+
+Table audit_log {
+  id uuid [pk]
+  actor_id uuid [ref: > app_user.id]
+  entity varchar [not null]
+  entity_id uuid [not null]
+  action varchar [not null]
+  changes jsonb
+  at timestamptz [not null]
+}
+
+Table legacy_reference {
+  id uuid [pk]
+  entity varchar [not null]
+  entity_id uuid [not null]
+  source varchar [not null, default: 'persat']
+  legacy_id varchar [not null]
+  imported_at timestamptz [not null]
+  indexes {
+    (entity, source, legacy_id) [unique]
+  }
+}
