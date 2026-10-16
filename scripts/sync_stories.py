@@ -120,7 +120,7 @@ def main() -> int:
 
     stories = load_stories()
     if args.dry_run:
-        repo = os.environ.get("GITHUB_REPOSITORY", "MendoData/ot-platform")
+        repo = os.environ.get("GITHUB_REPOSITORY", "jdcaballero15/Refrigeraci-n---Agus")
         for s in stories:
             title = f"[{s.id}] {s.meta['title']}"
             print(

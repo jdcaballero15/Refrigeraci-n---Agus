@@ -42,8 +42,8 @@ Cuando el cliente responde una decisión pendiente: `/resolve-decision D-001 <re
 ### Puesta en marcha (una sola vez)
 
 1. Instalar la [app de GitHub de Claude](https://github.com/apps/claude) en el repositorio.
-2. Cargar el secreto: `gh secret set ANTHROPIC_API_KEY -R MendoData/ot-platform`.
-3. Correr `scripts/bootstrap-github.sh MendoData/ot-platform` (etiquetas, ajustes de merge y protección de `main`).
+2. Cargar el secreto: `gh secret set ANTHROPIC_API_KEY -R jdcaballero15/Refrigeraci-n---Agus`.
+3. Correr `scripts/bootstrap-github.sh jdcaballero15/Refrigeraci-n---Agus` (etiquetas, ajustes de merge y protección de `main`).
 
 ### Ejemplos
 

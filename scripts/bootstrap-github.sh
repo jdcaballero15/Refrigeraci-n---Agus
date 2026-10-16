@@ -2,7 +2,7 @@
 # Configura el repositorio de GitHub una sola vez, después de crearlo y hacer el primer push.
 # Requiere: gh autenticado con permisos de administración sobre el repositorio.
 #
-# Uso:   scripts/bootstrap-github.sh MendoData/ot-platform
+# Uso:   scripts/bootstrap-github.sh jdcaballero15/Refrigeraci-n---Agus
 #
 # Qué hace:
 #   1. Crea o actualiza las etiquetas de .github/labels.yml

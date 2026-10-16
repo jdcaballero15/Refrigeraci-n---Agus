@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Reportar una vulnerabilidad
-    url: https://github.com/MendoData/ot-platform/security/advisories/new
+    url: https://github.com/jdcaballero15/Refrigeraci-n---Agus/security/advisories/new
     about: Reporte privado. No abrir un issue público para temas de seguridad.
